@@ -1,0 +1,10 @@
+{
+  "nodeModulesDir": "manual",
+  "tasks": {
+    "dev": "node ./node_modules/.bin/wxt",
+    "build": "node ./node_modules/.bin/wxt build",
+    "zip": "node ./node_modules/.bin/wxt zip",
+    "compile": "node ./node_modules/.bin/tsc --noEmit",
+    "prepare": "node ./node_modules/.bin/wxt prepare"
+  }
+}

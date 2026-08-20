@@ -1,0 +1,33 @@
+:root {
+  font-family: system-ui, sans-serif;
+  color: #213547;
+  background: #fff;
+}
+
+body {
+  margin: 0;
+  width: 220px;
+}
+
+#app {
+  padding: 12px;
+}
+
+button {
+  width: 100%;
+  border: 1px solid #d0d5dd;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font: inherit;
+  font-weight: 600;
+  background: #fff7e6;
+  cursor: pointer;
+}
+
+button[data-enabled='true'] {
+  background: #e8eefc;
+}
+
+button:hover {
+  border-color: #98a2b3;
+}
