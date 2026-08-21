@@ -1,33 +1,47 @@
 :root {
-  font-family: system-ui, sans-serif;
-  color: #213547;
-  background: #fff;
+  color: #26354d;
+  font-family: ui-rounded, "SF Pro Rounded", "Helvetica Neue", sans-serif;
 }
 
 body {
   margin: 0;
-  width: 220px;
+  min-width: 260px;
+  background: linear-gradient(145deg, #f7fbff, #fff8e8);
 }
 
-#app {
-  padding: 12px;
+main { padding: 18px; }
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 20px;
 }
+
+.heading img { width: 24px; height: 24px; }
+
+h1 { margin: 0; font-size: 17px; font-weight: 650; }
+
+label { display: block; font-size: 13px; font-weight: 600; }
+
+.control { display: flex; align-items: center; gap: 10px; margin-top: 9px; }
+
+input { accent-color: #e5ad55; flex: 1; }
+
+output { min-width: 38px; color: #5e6e87; font-size: 13px; font-variant-numeric: tabular-nums; text-align: right; }
 
 button {
   width: 100%;
-  border: 1px solid #d0d5dd;
+  margin-top: 18px;
+  border: 1px solid #d5dfea;
   border-radius: 8px;
   padding: 8px 12px;
+  color: #334560;
   font: inherit;
+  font-size: 13px;
   font-weight: 600;
-  background: #fff7e6;
+  background: rgba(255, 255, 255, 0.7);
   cursor: pointer;
 }
 
-button[data-enabled='true'] {
-  background: #e8eefc;
-}
-
-button:hover {
-  border-color: #98a2b3;
-}
+button:hover { background: #fff; border-color: #b9c9db; }

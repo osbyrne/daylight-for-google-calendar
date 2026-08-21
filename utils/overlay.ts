@@ -10,6 +10,7 @@ export type GridTarget = {
   dark: boolean;
   lat: number;
   lng: number;
+  opacity: number;
 };
 
 export function removeOverlay() {
@@ -17,7 +18,7 @@ export function removeOverlay() {
 }
 
 export function paintOverlay(target: GridTarget) {
-  const { scroller, gutter, days, dates, dark, lat, lng } = target;
+  const { scroller, gutter, days, dates, dark, lat, lng, opacity } = target;
   const box = scroller.getBoundingClientRect();
   const left = box.left + gutter;
   const width = box.width - gutter;
@@ -42,7 +43,10 @@ export function paintOverlay(target: GridTarget) {
     overflow: 'hidden',
     pointerEvents: 'none',
     zIndex: '8',
-    mixBlendMode: dark ? 'screen' : 'multiply',
+    // A normal translucent layer keeps the palette airy instead of intensifying
+    // the calendar's own colors through blend modes.
+    mixBlendMode: 'normal',
+    opacity: String(opacity),
   });
 
   const key = `${dates.map((d) => d.toDateString()).join('|')}|${days}|${scroller.scrollHeight}|${dark}`;

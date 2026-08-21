@@ -19,21 +19,42 @@ export function sunAltitude(date: Date, lat: number, lng: number): number {
   );
 }
 
+type Color = readonly [number, number, number];
+
+// Altitude stops make the transition through dawn and dusk gradual: cool blue
+// moves through periwinkle and peach before becoming a very light daylight yellow.
+const ALTITUDE_COLORS: readonly { alt: number; color: Color }[] = [
+  { alt: -18, color: [81, 126, 193] },
+  { alt: -12, color: [99, 145, 202] },
+  { alt: -7, color: [125, 166, 211] },
+  { alt: -3, color: [161, 186, 217] },
+  { alt: 0, color: [205, 195, 196] },
+  { alt: 3, color: [235, 204, 165] },
+  { alt: 7, color: [246, 218, 151] },
+  { alt: 15, color: [250, 231, 166] },
+  { alt: 55, color: [255, 244, 196] },
+];
+
+function mix(a: number, b: number, amount: number): number {
+  return Math.round(a + (b - a) * amount);
+}
+
 export function colorForAltitude(alt: number, dark: boolean): string {
-  if (alt >= 0) {
-    const t = Math.min(alt / 55, 1);
-    const r = 255;
-    const g = Math.round(150 + 70 * t);
-    const b = Math.round(36 + 24 * t);
-    const a = dark ? 0.35 : 0.45;
-    return `rgba(${r}, ${g}, ${b}, ${a})`;
-  }
-  const t = Math.min(-alt / 18, 1);
-  const r = Math.round(48 - 18 * t);
-  const g = Math.round(92 - 28 * t);
-  const b = Math.round(176 - 16 * t);
-  const a = dark ? 0.4 : 0.48;
-  return `rgba(${r}, ${g}, ${b}, ${a})`;
+  const clamped = Math.max(ALTITUDE_COLORS[0]!.alt, Math.min(alt, 55));
+  const upperIndex = ALTITUDE_COLORS.findIndex((stop) => stop.alt >= clamped);
+  const upper =
+    ALTITUDE_COLORS[upperIndex] ?? ALTITUDE_COLORS[ALTITUDE_COLORS.length - 1]!;
+  const lower = ALTITUDE_COLORS[Math.max(0, upperIndex - 1)]!;
+  const span = upper.alt - lower.alt || 1;
+  const amount = (clamped - lower.alt) / span;
+  const r = mix(lower.color[0], upper.color[0], amount);
+  const g = mix(lower.color[1], upper.color[1], amount);
+  const b = mix(lower.color[2], upper.color[2], amount);
+
+  // Keep calendar events and grid details readable; dark calendars need only a
+  // touch more tint to retain the same perceived softness.
+  const alpha = dark ? 0.18 : 0.14;
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
 }
 
 export function hourGradient(
@@ -43,13 +64,12 @@ export function hourGradient(
   dark: boolean,
 ): string {
   const stops: string[] = [];
-  for (let hour = 0; hour < 24; hour++) {
+  for (let halfHour = 0; halfHour < 48; halfHour++) {
     const mid = new Date(day);
-    mid.setHours(hour, 30, 0, 0);
+    mid.setHours(0, halfHour * 30, 0, 0);
     const color = colorForAltitude(sunAltitude(mid, lat, lng), dark);
-    const start = ((hour / 24) * 100).toFixed(4);
-    const end = (((hour + 1) / 24) * 100).toFixed(4);
-    stops.push(`${color} ${start}%`, `${color} ${end}%`);
+    const position = ((halfHour / 48) * 100).toFixed(4);
+    stops.push(`${color} ${position}%`);
   }
   return `linear-gradient(to bottom, ${stops.join(', ')})`;
 }

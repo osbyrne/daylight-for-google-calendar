@@ -9,9 +9,10 @@ import {
 } from '@/utils/calendar';
 import { observerCoords } from '@/utils/location';
 import { paintOverlay, removeOverlay, type GridTarget } from '@/utils/overlay';
-import { ENABLED_KEY, getEnabled } from '@/utils/settings';
+import { ext, isEnabledMessage } from '@/utils/runtime';
 
 let enabled = true;
+let opacity = 1;
 let scroller: HTMLElement | null = null;
 
 export default defineContentScript({
@@ -28,13 +29,22 @@ export default defineContentScript({
       }, 80);
     };
 
-    getEnabled().then((value) => {
-      enabled = value;
-      paint();
-    });
-    browser.storage.onChanged.addListener((changes, area) => {
-      if (area !== 'local' || !changes[ENABLED_KEY]) return;
-      enabled = changes[ENABLED_KEY].newValue !== false;
+    paint();
+    void ext()
+      .runtime.sendMessage({ type: 'daytime-get' })
+      .then((response) => {
+        const settings = response as { enabled?: boolean; opacity?: number } | undefined;
+        enabled = settings?.enabled !== false;
+        opacity = settings?.opacity ?? 1;
+        paint();
+      })
+      .catch(() => {
+        paint();
+      });
+    ext().runtime.onMessage.addListener((msg) => {
+      if (!isEnabledMessage(msg) || msg.type !== 'daytime-changed') return;
+      enabled = msg.enabled !== false;
+      opacity = msg.opacity ?? opacity;
       paint();
     });
 
@@ -80,6 +90,7 @@ function locateGrid(): GridTarget | null {
     dark: isDarkBackground(found),
     lat,
     lng,
+    opacity,
   };
 }
 

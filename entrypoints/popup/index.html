@@ -4,12 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Daytime</title>
-    <meta name="manifest.type" content="browser_action" />
   </head>
   <body>
-    <div id="app">
-      <button id="toggle" type="button">Activate overlay</button>
-    </div>
+    <main>
+      <div class="heading">
+        <img src="/icon/sun.png" alt="" />
+        <h1>Daytime</h1>
+      </div>
+      <label for="opacity">Color opacity</label>
+      <div class="control">
+        <input id="opacity" type="range" min="0" max="100" value="100" />
+        <output for="opacity" id="opacity-value">100%</output>
+      </div>
+      <button id="toggle" type="button">Deactivate overlay</button>
+    </main>
     <script type="module" src="./main.ts"></script>
   </body>
 </html>
