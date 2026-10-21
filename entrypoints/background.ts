@@ -62,7 +62,7 @@ async function applyIcon(enabled: boolean) {
   const api = ext().action;
   if (!api) return;
   await api.setIcon({
-    path: enabled ? 'icon/sun.png' : 'icon/sun-off.png',
+    path: enabled ? 'icon/on.png' : 'icon/off.png',
   });
   await api.setTitle({
     title: enabled ? 'Deactivate daylight overlay' : 'Activate daylight overlay',
