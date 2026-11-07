@@ -1,32 +1,43 @@
-import {
-  dayCount,
-  datesForDays,
-  findHourLabels,
-  findMainScroller,
-  gutterWidth,
-  nearestScroller,
-} from '@/utils/calendar';
+import { findTimeGrid } from '@/utils/calendar';
 import { observerCoords } from '@/utils/location';
-import { paintOverlay, removeOverlay, type GridTarget } from '@/utils/overlay';
+import { paintOverlay, removeOverlay } from '@/utils/overlay';
 import { ext, isEnabledMessage } from '@/utils/runtime';
-
-let enabled = true;
-let opacity = 1;
-let scroller: HTMLElement | null = null;
 
 export default defineContentScript({
   matches: ['*://calendar.google.com/*'],
   runAt: 'document_idle',
   main(ctx) {
+    let enabled = true;
+    let opacity = 1;
     let pending = false;
-    const schedule = () => {
-      if (pending) return;
+    let observedRow: HTMLElement | undefined;
+    const resizeObserver = new ResizeObserver(schedule);
+
+    function schedule() {
+      if (pending || ctx.isInvalid) return;
       pending = true;
       ctx.setTimeout(() => {
         pending = false;
         paint();
       }, 80);
-    };
+    }
+
+    function paint() {
+      if (ctx.isInvalid) return;
+      const grid = enabled ? findTimeGrid() : null;
+      if (grid?.row !== observedRow) {
+        resizeObserver.disconnect();
+        observedRow = grid?.row;
+        if (observedRow) resizeObserver.observe(observedRow);
+      }
+      if (!grid) {
+        removeOverlay();
+        return;
+      }
+
+      const [lat, lng] = observerCoords();
+      paintOverlay({ ...grid, lat, lng, opacity });
+    }
 
     paint();
     void ext()
@@ -41,69 +52,25 @@ export default defineContentScript({
         paint();
       });
     ext().runtime.onMessage.addListener((msg) => {
-      if (!isEnabledMessage(msg) || msg.type !== 'daytime-changed') return;
+      if (ctx.isInvalid || !isEnabledMessage(msg) || msg.type !== 'daytime-changed') return;
       enabled = msg.enabled !== false;
       opacity = msg.opacity ?? opacity;
       paint();
     });
 
     const observer = new MutationObserver(schedule);
-    observer.observe(document.body, { childList: true, subtree: true });
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ['data-datekey', 'data-column-index'],
+    });
     ctx.addEventListener(window, 'wxt:locationchange', schedule);
     ctx.addEventListener(window, 'resize', schedule);
-    ctx.addEventListener(window, 'scroll', schedule, { capture: true });
+    ctx.onInvalidated(() => {
+      observer.disconnect();
+      resizeObserver.disconnect();
+      removeOverlay();
+    });
   },
 });
-
-function paint() {
-  if (!enabled) {
-    unbindScroller();
-    removeOverlay();
-    return;
-  }
-
-  const target = locateGrid();
-  if (!target) {
-    unbindScroller();
-    removeOverlay();
-    return;
-  }
-
-  bindScroller(target.scroller);
-  paintOverlay(target);
-}
-
-function locateGrid(): GridTarget | null {
-  const labels = findHourLabels();
-  const found =
-    (labels[0] ? nearestScroller(labels[0]) : null) ?? findMainScroller();
-  if (!found) return null;
-
-  const days = dayCount(found);
-  const [lat, lng] = observerCoords();
-  return {
-    scroller: found,
-    gutter: gutterWidth(found, labels),
-    days,
-    dates: datesForDays(days),
-    lat,
-    lng,
-    opacity,
-  };
-}
-
-function bindScroller(el: HTMLElement) {
-  if (scroller === el) return;
-  unbindScroller();
-  scroller = el;
-  el.addEventListener('scroll', onScroll, { passive: true });
-}
-
-function unbindScroller() {
-  scroller?.removeEventListener('scroll', onScroll);
-  scroller = null;
-}
-
-function onScroll() {
-  paint();
-}
