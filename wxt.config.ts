@@ -9,20 +9,12 @@ export default defineConfig({
     name: 'Daytime',
     description: 'Daylight hours on Google Calendar',
     icons: {
-      16: 'icon/sun.png',
-      32: 'icon/sun.png',
-      48: 'icon/sun.png',
-      96: 'icon/sun.png',
-      128: 'icon/sun.png',
+      128: 'icon/on.png',
     },
     action: {
       default_popup: 'popup.html',
       default_icon: {
-        16: 'icon/sun.png',
-        32: 'icon/sun.png',
-        48: 'icon/sun.png',
-        96: 'icon/sun.png',
-        128: 'icon/sun.png',
+        128: 'icon/on.png',
       },
     },
     permissions: ['storage'],

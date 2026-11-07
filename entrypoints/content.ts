@@ -4,7 +4,6 @@ import {
   findHourLabels,
   findMainScroller,
   gutterWidth,
-  isDarkBackground,
   nearestScroller,
 } from '@/utils/calendar';
 import { observerCoords } from '@/utils/location';
@@ -87,7 +86,6 @@ function locateGrid(): GridTarget | null {
     gutter: gutterWidth(found, labels),
     days,
     dates: datesForDays(days),
-    dark: isDarkBackground(found),
     lat,
     lng,
     opacity,

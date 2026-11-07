@@ -130,25 +130,6 @@ function addDays(date: Date, days: number): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate() + days);
 }
 
-export function isDarkBackground(el: HTMLElement): boolean {
-  let node: HTMLElement | null = el;
-  while (node) {
-    const color = getComputedStyle(node).backgroundColor;
-    const parts = color.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-    if (parts) {
-      const r = Number(parts[1]);
-      const g = Number(parts[2]);
-      const b = Number(parts[3]);
-      const a = color.startsWith('rgba')
-        ? Number(color.slice(color.lastIndexOf(',') + 1, -1))
-        : 1;
-      if (a > 0.4) return (r * 299 + g * 587 + b * 114) / 1000 < 128;
-    }
-    node = node.parentElement;
-  }
-  return false;
-}
-
 export function gutterWidth(scroller: HTMLElement, labels: HTMLElement[]): number {
   if (labels.length > 0) {
     const right = Math.max(

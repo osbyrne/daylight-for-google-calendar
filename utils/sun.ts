@@ -39,7 +39,7 @@ function mix(a: number, b: number, amount: number): number {
   return Math.round(a + (b - a) * amount);
 }
 
-export function colorForAltitude(alt: number, dark: boolean): string {
+export function colorForAltitude(alt: number): string {
   const clamped = Math.max(ALTITUDE_COLORS[0]!.alt, Math.min(alt, 55));
   const upperIndex = ALTITUDE_COLORS.findIndex((stop) => stop.alt >= clamped);
   const upper =
@@ -51,23 +51,19 @@ export function colorForAltitude(alt: number, dark: boolean): string {
   const g = mix(lower.color[1], upper.color[1], amount);
   const b = mix(lower.color[2], upper.color[2], amount);
 
-  // Keep calendar events and grid details readable; dark calendars need only a
-  // touch more tint to retain the same perceived softness.
-  const alpha = dark ? 0.18 : 0.14;
-  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  return `rgb(${r}, ${g}, ${b})`;
 }
 
 export function hourGradient(
   day: Date,
   lat: number,
   lng: number,
-  dark: boolean,
 ): string {
   const stops: string[] = [];
   for (let halfHour = 0; halfHour < 48; halfHour++) {
     const mid = new Date(day);
     mid.setHours(0, halfHour * 30, 0, 0);
-    const color = colorForAltitude(sunAltitude(mid, lat, lng), dark);
+    const color = colorForAltitude(sunAltitude(mid, lat, lng));
     const position = ((halfHour / 48) * 100).toFixed(4);
     stops.push(`${color} ${position}%`);
   }

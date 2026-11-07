@@ -7,7 +7,6 @@ export type GridTarget = {
   gutter: number;
   days: number;
   dates: Date[];
-  dark: boolean;
   lat: number;
   lng: number;
   opacity: number;
@@ -18,7 +17,7 @@ export function removeOverlay() {
 }
 
 export function paintOverlay(target: GridTarget) {
-  const { scroller, gutter, days, dates, dark, lat, lng, opacity } = target;
+  const { scroller, gutter, days, dates, lat, lng, opacity } = target;
   const box = scroller.getBoundingClientRect();
   const left = box.left + gutter;
   const width = box.width - gutter;
@@ -43,13 +42,11 @@ export function paintOverlay(target: GridTarget) {
     overflow: 'hidden',
     pointerEvents: 'none',
     zIndex: '8',
-    // A normal translucent layer keeps the palette airy instead of intensifying
-    // the calendar's own colors through blend modes.
     mixBlendMode: 'normal',
     opacity: String(opacity),
   });
 
-  const key = `${dates.map((d) => d.toDateString()).join('|')}|${days}|${scroller.scrollHeight}|${dark}`;
+  const key = `${dates.map((d) => d.toDateString()).join('|')}|${days}|${scroller.scrollHeight}`;
   let inner = root.firstElementChild as HTMLElement | null;
   if (!inner || root.dataset.key !== key) {
     inner = document.createElement('div');
@@ -59,7 +56,7 @@ export function paintOverlay(target: GridTarget) {
     inner.replaceChildren(
       ...dates.map((day) => {
         const column = document.createElement('div');
-        column.style.background = hourGradient(day, lat, lng, dark);
+        column.style.background = hourGradient(day, lat, lng);
         column.style.height = '100%';
         return column;
       }),
